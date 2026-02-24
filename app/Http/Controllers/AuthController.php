@@ -34,11 +34,17 @@ class AuthController extends Controller
                 ]
             );
             // dd($response->json());
-
+            $data = $response->json();
             if ($response->failed()) {
-                return back()
-                    ->withInput()
-                    ->with('error', 'Invalid email or password.');
+                if (isset($data['error']) && $data['error'] == 'invalid_client') {
+                    return back()->with('error', 'SSO configuration error. Contact admin.');
+                }
+
+                if (isset($data['error']) && $data['error'] == 'invalid_grant') {
+                    return back()->withInput()->with('error', 'Invalid email or password.');
+                }
+
+                return back()->with('error', 'Authentication failed.');
             }
 
             session([
